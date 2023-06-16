@@ -30,7 +30,7 @@
       class="btn-wrap"
     >
       <template #content="{ maskImage }">
-        <div class="btn-content" :style="{ maskImage }">-- Tinny --</div>
+        <div class="btn-content" :style="{ maskImage }">-- Thin --</div>
       </template>
       <template #border="{ maskImage }">
         <div class="btn-border" :style="{ maskImage }"></div>
