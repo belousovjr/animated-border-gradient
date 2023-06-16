@@ -2,75 +2,75 @@
   <div
     class="wrap"
     :style="{
-      maskImage: maskWrap,
-      padding: `${borderWidth}px`,
+      padding: `${borderWidth}px !important`,
     }"
   >
-    abcdfsdfsdf
-    <div
-      class="border"
-      ref="border"
-      :style="{
-        maskImage: mask,
-      }"
-    ></div>
+    <slot name="content" :maskImage="maskContent" />
+    <slot name="border" :maskImage="mask" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, defineProps } from "vue";
 
-const borderWidth = 100;
-const borderRadius = `100px`;
+const props = defineProps<{
+  borderWidth: number;
+  borderRadius: number;
+  strokeDasharray?: string;
+  strokeDashoffset?: number;
+}>();
 
-const getMask = (w: number, r: string, isWrap = false) =>
+const getMask = (w: number, r: number, isContent = false) =>
   [
     `url("data:image/svg+xml,%3Csvg`,
     `xmlns='http://www.w3.org/2000/svg'`,
     `width='100%'`,
     `height='100%'%3E%3Crect`,
-    `fill='${!isWrap ? "transparent" : "black"}'`,
+    !isContent && `fill='transparent'`,
     `stroke='black'`,
     `stroke-width='${w}'`,
-    `style='rx: ${r}; width: calc(100% - ${w}px); height: calc(100% - ${w}px);'`,
+    `stroke-dasharray='${(!isContent && props.strokeDasharray) || ""}'`,
+    `stroke-dashoffset='${(!isContent && props.strokeDashoffset) || 0}'`,
+    `style='rx: ${
+      !isContent ? `${r}px` : `${Math.max(0, r - w)}px`
+    }; width: calc(100% - ${w}px); height: calc(100% - ${w}px);'`,
     `x='${w / 2}'`,
     `y='${w / 2}'`,
     `width='100%'`,
     `height='100%'/%3E%3C/svg%3E")`,
-  ].join(" ");
+  ]
+    .filter((e) => e)
+    .join(" ");
 
-const mask = computed(() => getMask(borderWidth, borderRadius));
-const maskWrap = computed(() => getMask(borderWidth, borderRadius, true));
-
-const border = ref<HTMLDivElement>();
+const mask = computed(() => getMask(props.borderWidth, props.borderRadius));
+const maskContent = computed(() =>
+  getMask(props.borderWidth, props.borderRadius, true)
+);
 </script>
 
-<style>
+<style scoped>
 .wrap {
   position: relative !important;
   display: inline-block !important;
   box-sizing: border-box !important;
-  background-color: red !important;
-  z-index: 1 !important;
+  background-color: transparent !important;
   mask-repeat: no-repeat !important;
   mask-position: center !important;
+  min-width: min-content;
 }
-.border {
-  z-index: -1 !important;
+
+.wrap :slotted(*):first-child {
+  position: relative !important;
+}
+
+.wrap :slotted(*):last-child {
   position: absolute !important;
-  transition: all 0.5s !important;
-  background: linear-gradient(
-    90deg,
-    rgba(2, 0, 36, 1) 0%,
-    rgba(9, 9, 121, 1) 35%,
-    rgba(0, 212, 255, 1) 100%
-  ) !important;
-  opacity: 0.4 !important;
   left: 0 !important;
   top: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
   mask-repeat: no-repeat !important;
   mask-position: center !important;
+  pointer-events: none !important;
 }
 </style>
